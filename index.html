@@ -63,6 +63,9 @@ nav.stages button.on b{opacity:1}
 .pane figcaption{padding:8px 14px;font-family:"Jua",sans-serif;font-size:21px;display:flex;justify-content:space-between;gap:8px;align-items:center;border-bottom:1px solid var(--line);background:var(--night)}
 .pane figcaption small{font-family:"Noto Sans KR",sans-serif;font-size:14px;color:var(--dim)}
 .pane canvas{display:block;width:100%;aspect-ratio:4/3;background:#070c22}
+.vtog{display:flex;gap:6px;margin-left:auto}
+.vtog .btn{font-family:"Noto Sans KR",sans-serif;font-size:15px;padding:5px 12px}
+#paneSpace figcaption{flex-wrap:wrap}
 .legend{padding:8px 14px;font-size:15px;color:var(--dim);border-top:1px solid var(--line);background:var(--night);display:flex;flex-wrap:wrap;gap:4px 18px}
 .legend:empty{display:none}
 .legend b{color:var(--chalk);font-weight:500}
@@ -106,6 +109,11 @@ td.wrong{background:#ffe6e2}
 .info h4{margin:0 0 6px;font-family:"Jua",sans-serif;font-weight:400;font-size:22px;color:#1b2c5e}
 .info p{margin:6px 0}
 .info b{color:#0b3a8a}
+.info .steps{margin:4px 0 10px;padding-left:22px}
+.info .steps li{margin:6px 0}
+.info.book{border-left-color:#ff9a3c}
+table.rec.mini{min-width:0;margin:6px 0;font-size:16px}
+table.rec.mini tbody th{width:auto}
 .info .small{font-size:15px;color:#4a5578}
 .btn.big.shoot{background:#ff6f61;border-color:#ff6f61;color:#fff;font-family:"Noto Sans KR",sans-serif;font-size:18px;padding:8px 20px;margin-left:auto}
 #paneEarth figcaption{justify-content:flex-start;gap:10px;flex-wrap:wrap}
@@ -145,8 +153,8 @@ footer{margin-top:24px;color:var(--dim);font-size:13px;line-height:1.7}
   <nav class="stages" aria-label="탐구 단계">
     <button data-stage="0" class="on"><b>1</b><span>지구의 공전<br>알아보기</span></button>
     <button data-stage="1"><b>2</b><span>모형으로<br>실험하기</span></button>
-    <button data-stage="2"><b>3</b><span>태양의 연주 운동<br>관찰하기</span><i class="lk">🔒</i></button>
-    <button data-stage="3"><b>4</b><span>우리나라 밤하늘에서<br>확인하기</span><i class="lk">🔒</i></button>
+    <button data-stage="2"><b>3</b><span>1년 동안 태양의 길<br>따라가기 (연주 운동)</span><i class="lk">🔒</i></button>
+    <button data-stage="3"><b>4</b><span>달마다 바뀌는<br>우리나라 밤하늘</span><i class="lk">🔒</i></button>
   </nav>
 
   <section class="guide" id="guide"></section>
@@ -191,7 +199,7 @@ footer{margin-top:24px;color:var(--dim);font-size:13px;line-height:1.7}
     </div>
     <div class="views" id="views">
       <figure class="pane" id="paneSpace">
-        <figcaption>🚀 우주에서 본 모습 <small>위에서 내려다봄</small></figcaption>
+        <figcaption><span>🚀 우주에서 본 모습 <small id="spaceSub">위에서 내려다봄</small></span><span class="vtog hidden" id="viewTog"><button class="btn on" data-v="book">📖 교과서 그림처럼</button><button class="btn" data-v="top">⬇ 위에서 내려다보기</button></span></figcaption>
         <canvas id="cvSpace" aria-label="우주에서 내려다본 지구 공전 모형"></canvas>
         <div class="legend" id="spaceLegend"></div>
       </figure>
@@ -206,15 +214,14 @@ footer{margin-top:24px;color:var(--dim);font-size:13px;line-height:1.7}
     <div class="controls hidden" data-for="2">
       <div class="row">
         <span class="lbl">재생</span>
-        <button class="btn big playBtn" data-mode="slow">▶ 하루씩 재생 (자전 + 공전)</button>
-        <button class="btn big playBtn" data-mode="fast">⏩ 빠르게 1년 (자전 생략)</button>
+        <button class="btn big playBtn" data-mode="fast">▶ 1년 재생</button>
+        <button class="btn big" id="followBtn">📖 교과서처럼 9월 → 12월 따라가기</button>
       </div>
       <div class="row">
         <span class="lbl">날짜</span>
         <input type="range" class="daySlider" min="0" max="364" step="1" aria-label="날짜">
         <span class="readout dateOut"></span>
       </div>
-      <p class="tip" id="countOut">하루씩 재생: 지구가 하루에 한 바퀴 자전하는 동안 공전 궤도는 약 1°만 나아가요. 공전이 얼마나 느린지 살펴보세요.</p>
       <div class="row">
         <span class="lbl">하늘 보기</span>
         <button class="btn on skyMode" data-sky="day">☀ 낮 (태양 쪽 하늘)</button>
@@ -444,7 +451,7 @@ const PANELDOTS=CONS.map(()=>Array.from({length:18},()=>({u:R1(),z:-55+R1()*110,
 
 /* ---------- 상태 ---------- */
 const S={stage:1,day:dayFromSunLon(175),hour:0,camDir:'sun',sunReal:false,eclipse:false,imagine:false,ecl:true,
-  playYear:false,playTime:false,az0:180,trail:[],visited3:false,skyMode:'day',rotHour:12,rotAnim:false,playMode:'slow',playStart:0,play0:null,orbStart:0,el:0,rotTarget:12,pendingSky:'day',unlocked:{}};
+  playYear:false,playTime:false,az0:180,trail:[],visited3:false,skyMode:'day',rotHour:12,rotAnim:false,playMode:'slow',playStart:0,view2:'book',followTo:null,play0:null,orbStart:0,el:0,rotTarget:12,pendingSky:'day',unlocked:{}};
 try{S.unlocked=JSON.parse(sessionStorage.getItem('revUnlock')||'{}')}catch(e){}
 
 /* ---------- 캔버스 ---------- */
@@ -470,7 +477,7 @@ const CX=400,CY=300,RW=210,RO=115;
 const P=(phi,rad)=>[CX+rad*Math.cos(phi*D2R),CY-rad*Math.sin(phi*D2R)];
 const earthPhi=()=>sunLon(S.day)+5; // 화면 각도 = 황경-175
 const RO0=200;
-function earthXY(){return P(earthPhi(),S.stage===0?RO0:RO)}
+function earthXY(){if(bookView())return BK.pt(sunLon(S.day)+180,0,BK.RE);return P(earthPhi(),S.stage===0?RO0:RO)}
 function currentPos(){const l=sunLon(S.day);for(const k in POS)if(Math.abs(wrap180(l-POS[k]))<.6)return k;return null}
 
 /* 3단계: 지금 하늘 그림에 보이는 황도(황경) 구간 */
@@ -494,7 +501,7 @@ function arrowArc(x,cx,cy,r,a0,a1,color,label){ // 반시계 방향 화살표 (a
   if(label){const m=(a0+a1)/2*D2R;x.font=`15px ${FONT}`;x.textAlign='center';x.textBaseline='middle';x.fillText(label,cx+(r+16)*Math.cos(m),cy-(r+16)*Math.sin(m))}}
 
 function renderSpace(){
-  const x=fit(cs);if(!x)return;const st=S.stage;if(st===0){renderSpace0(x);return}
+  const x=fit(cs);if(!x)return;const st=S.stage;if(st===0){renderSpace0(x);return}if(bookView()){renderBook(x);return}
   const ls=sunLon(S.day),phE=earthPhi(),[ex,ey]=P(phE,RO);
   x.fillStyle='#070c22';x.fillRect(0,0,800,600);
   SPACESTARS.forEach(s=>{x.globalAlpha=s.o;x.fillStyle='#fff';x.beginPath();x.arc(s.x,s.y,s.r,0,7);x.fill()});x.globalAlpha=1;
@@ -569,12 +576,88 @@ function renderSpace(){
   }
   // 정보
   const pos=currentPos();
-  pill(x,`📅 ${dateLabel(S.day)} 무렵`+(st===3?`  ${hourLabel(S.hour)}`:st===2?`  ${fastPlay()?'(자전 생략)':hourLabel(S.rotHour)}`:''),12,12);
+  pill(x,`📅 ${dateLabel(S.day)} 무렵`+(st===3?`  ${hourLabel(S.hour)}`:st===2?`  ${fastPlay()?'':hourLabel(S.rotHour)}`:''),12,12);
   if(st===1)pill(x,pos?`지구 위치: (${pos})`:'지구 위치: (가)~(라) 사이',12,50,{fg:pos?'#ffd27a':'#a9b6dc'});
 
 }
 
 /* ---------- 지구에서 본 모습 ---------- */
+/* ---------- 교과서 그림 Ⅶ-9처럼 비스듬히 본 모습 (3단계) ---------- */
+const bookView=()=>S.stage===2&&S.view2==='book';
+const BK={CX:400,CY:290,R:340,RE:160,K:.42,UP:50,DN:70,OFF:118,
+  ang(l){return(l-this.OFF)*D2R}, // 황경 → 화면 각도 (시계 반대 방향 = 공전 방향)
+  pt(l,h,r){const a=this.ang(l);return[this.CX+r*Math.cos(a),this.CY-r*Math.sin(a)*this.K-h]},
+  back(l){return Math.sin(this.ang(l))>0}};
+function renderBook(x){
+  const ls=sunLon(S.day),le=ls+180,R=BK.R;
+  x.fillStyle='#070c22';x.fillRect(0,0,800,600);
+  SPACESTARS.forEach(s=>{x.globalAlpha=s.o*.7;x.fillStyle='#fff';x.beginPath();x.arc(s.x,s.y,s.r,0,7);x.fill()});x.globalAlpha=1;
+  const band=(l0,l1,fill)=>{x.beginPath();for(let l=l0;l<=l1;l+=2){const[a,b]=BK.pt(l,BK.UP,R);l===l0?x.moveTo(a,b):x.lineTo(a,b)}
+    for(let l=l1;l>=l0;l-=2){const[a,b]=BK.pt(l,-BK.DN,R);x.lineTo(a,b)}x.closePath();x.fillStyle=fill;x.fill()};
+  const L0=BK.OFF; // 화면 각도 0°가 되는 황경
+  // 안쪽 벽(뒤쪽 반)
+  const gB=x.createLinearGradient(0,BK.CY-R*BK.K-BK.UP,0,BK.CY);gB.addColorStop(0,'#2b3f8c');gB.addColorStop(1,'#1d2c66');
+  band(L0,L0+180,gB);
+  // 별자리
+  const sunC=consAt(ls),antiC=consAt(le);
+  const consPass=back=>CONS.forEach(c=>{if(BK.back(c.L)!==back)return;
+    const hl=c===sunC?'sun':c===antiC?'anti':null;
+    let[mx,my]=BK.pt(c.L,BK.UP-14,R),[nx,ny]=BK.pt(c.L,-BK.DN+16,R);nx=clamp(nx,48,752);mx=clamp(mx,30,770);const edge=Math.abs(Math.cos(BK.ang(c.L)));
+    if(edge>.9995)return;
+    drawFig(x,c,(dx,dy)=>BK.pt(c.L+dx,dy*2.1-6,R),{lw:1.4,sr:1.5,line:hl==='sun'?'#ffd27a':'#f4d77a'});
+    x.font=`${back?16:18}px ${FONT}`;x.textAlign='center';x.textBaseline='middle';
+    if(hl){x.font=`${back?17:19}px ${FONT}`;const w=x.measureText(c.name).width+16;rr(x,nx-w/2,ny-13,w,26,13);x.fillStyle=hl==='sun'?'rgba(255,170,60,.9)':'rgba(120,160,255,.9)';x.fill()}
+    x.fillStyle=hl?'#1a1030':'#eef2ff';x.fillText(c.name,nx,ny);
+    if(hl!=='sun'){x.font=`${back?14:16}px ${FONT}`;x.fillStyle='#cfd8ff';x.fillText(c.m+'월',mx,my)}});
+  // 태양 자취(황도 위 화살표)
+  const trailPass=back=>{const T=S.trail;if(T.length<2)return;x.strokeStyle='rgba(120,190,255,.75)';x.lineWidth=12;x.lineCap='round';
+    for(let i=1;i<T.length;i++){let a=T[i-1],b=T[i];if(Math.abs(wrap180(b-a))>20)continue;const m=a+wrap180(b-a)/2;if(BK.back(m)!==back)continue;
+      const p=BK.pt(a,0,R-2),q=BK.pt(a+wrap180(b-a),0,R-2);x.beginPath();x.moveTo(...p);x.lineTo(...q);x.stroke()}x.lineCap='butt'};
+  const imgPass=back=>{if(BK.back(ls)!==back)return;const[ix,iy]=BK.pt(ls,0,R-2);
+    const g=x.createRadialGradient(ix,iy,4,ix,iy,34);g.addColorStop(0,'rgba(255,230,150,.95)');g.addColorStop(1,'rgba(255,160,60,0)');x.fillStyle=g;x.beginPath();x.arc(ix,iy,34,0,7);x.fill();
+    x.fillStyle='#ff8c2a';x.beginPath();x.arc(ix,iy,13,0,7);x.fill();x.strokeStyle='#ffe2a6';x.lineWidth=2;x.stroke();
+    // 자취 끝 화살표 (서→동)
+    const[ax,ay]=BK.pt(ls+6,0,R-2);const t=Math.atan2(ay-iy,ax-ix);x.save();x.translate(ax,ay);x.rotate(t);x.fillStyle='rgba(120,190,255,.95)';
+    x.beginPath();x.moveTo(12,0);x.lineTo(-6,-10);x.lineTo(-6,10);x.closePath();x.fill();x.restore()};
+  consPass(true);trailPass(true);imgPass(true);
+  // 공전 궤도
+  x.strokeStyle='rgba(255,140,60,.75)';x.lineWidth=2;x.setLineDash([6,6]);x.beginPath();x.ellipse(BK.CX,BK.CY,BK.RE,BK.RE*BK.K,0,0,7);x.stroke();x.setLineDash([]);
+  // 지구가 지나온 길(공전 방향 화살표)
+  x.strokeStyle='#ff8c2a';x.lineWidth=6;x.lineCap='round';x.beginPath();for(let l=le-40;l<=le-8;l+=2){const[a,b]=BK.pt(l,0,BK.RE);l===le-40?x.moveTo(a,b):x.lineTo(a,b)}x.stroke();x.lineCap='butt';
+  {const[a,b]=BK.pt(le-8,0,BK.RE),[c,d]=BK.pt(le-4,0,BK.RE);const t=Math.atan2(d-b,c-a);x.save();x.translate(c,d);x.rotate(t);x.fillStyle='#ff8c2a';x.beginPath();x.moveTo(10,0);x.lineTo(-6,-9);x.lineTo(-6,9);x.closePath();x.fill();x.restore()}
+  const[ex,ey]=BK.pt(le,0,BK.RE),[ix,iy]=BK.pt(ls,0,R-2);
+  // 시선: 지구 → 태양 → 별자리
+  x.strokeStyle='rgba(255,214,120,.9)';x.lineWidth=2;x.setLineDash([7,6]);x.beginPath();x.moveTo(ex,ey);x.lineTo(ix,iy);x.stroke();x.setLineDash([]);
+  const drawSun=()=>{const g=x.createRadialGradient(BK.CX,BK.CY,6,BK.CX,BK.CY,58);g.addColorStop(0,'rgba(255,240,180,.95)');g.addColorStop(1,'rgba(255,170,50,0)');
+    x.fillStyle=g;x.beginPath();x.arc(BK.CX,BK.CY,58,0,7);x.fill();x.fillStyle='#ff9a2e';x.beginPath();x.arc(BK.CX,BK.CY,24,0,7);x.fill();
+    x.font=`16px ${FONT}`;x.fillStyle='#2a1200';x.textAlign='center';x.textBaseline='middle';x.fillText('태양',BK.CX,BK.CY+1)};
+  const drawE=()=>{x.fillStyle='#2f78d8';x.beginPath();x.arc(ex,ey,17,0,7);x.fill();x.fillStyle='#4fb06e';x.beginPath();x.arc(ex-4,ey-4,7,0,7);x.fill();
+    const t=Math.atan2(BK.CY-ey,BK.CX-ex);x.fillStyle='rgba(0,0,25,.55)';x.beginPath();x.arc(ex,ey,17.5,t+Math.PI/2,t+Math.PI*1.5);x.closePath();x.fill();
+    x.strokeStyle='#bfe3ff';x.lineWidth=1.5;x.beginPath();x.arc(ex,ey,17,0,7);x.stroke();
+    x.font=`17px ${FONT}`;x.textAlign='center';x.textBaseline='middle';x.lineWidth=4;x.strokeStyle='#070c22';x.strokeText('지구',ex,ey+30);x.fillStyle='#bfe3ff';x.fillText('지구',ex,ey+30)};
+  if(BK.back(le)){drawE();drawSun()}else{drawSun();drawE()}
+  // 바깥 벽(앞쪽 반)
+  const gF=x.createLinearGradient(0,BK.CY,0,BK.CY+R*BK.K+BK.DN);gF.addColorStop(0,'rgba(24,36,88,.93)');gF.addColorStop(1,'rgba(16,24,64,.97)');
+  band(L0+180,L0+360,gF);
+  x.strokeStyle='#5a72c8';x.lineWidth=2;x.beginPath();x.ellipse(BK.CX,BK.CY-BK.UP,R,R*BK.K,0,0,7);x.stroke();
+  x.beginPath();for(let l=L0+180;l<=L0+360;l+=2){const[a,b]=BK.pt(l,-BK.DN,R);l===L0+180?x.moveTo(a,b):x.lineTo(a,b)}x.stroke();
+  consPass(false);trailPass(false);imgPass(false);
+  // 지구에서 태양을 볼 때의 방위 (동·서·남·북)
+  {const[ix,iy]=BK.pt(ls,0,R-2);let[qx,qy]=BK.pt(ls+10,0,R-2);let ux=qx-ix,uy=qy-iy;const n=Math.hypot(ux,uy)||1;ux/=n;uy/=n;
+    const D=84;const lab=(t,px,py,c,sz)=>{x.font=`${sz}px ${FONT}`;x.textAlign='center';x.textBaseline='middle';x.lineWidth=5;x.strokeStyle='#070c22';x.strokeText(t,px,py);x.fillStyle=c;x.fillText(t,px,py)};
+    const arr=(x1,y1,x2,y2,c)=>{x.strokeStyle=c;x.lineWidth=3;x.beginPath();x.moveTo(x1,y1);x.lineTo(x2,y2);x.stroke();const t=Math.atan2(y2-y1,x2-x1);
+      x.save();x.translate(x2,y2);x.rotate(t);x.fillStyle=c;x.beginPath();x.moveTo(8,0);x.lineTo(-5,-6);x.lineTo(-5,6);x.closePath();x.fill();x.restore()};
+    arr(ix+ux*18,iy+uy*18,ix+ux*(D-14),iy+uy*(D-14),'#ffe9a8');arr(ix-ux*18,iy-uy*18,ix-ux*(D-14),iy-uy*(D-14),'#ffe9a8');
+    arr(ix,iy-16,ix,iy-26,'#ffe9a8');arr(ix,iy+16,ix,iy+24,'#ffe9a8');
+    lab('동',ix+ux*D,iy+uy*D,'#ffe066',22);lab('서',ix-ux*D,iy-uy*D,'#ffe066',22);
+    lab('북',ix,iy-38,'#ffe9a8',17);lab('남',ix,iy+34,'#ffe9a8',17)}
+  pill(x,'지구에서 보면 태양은 별자리 사이를 서쪽 → 동쪽으로 옮겨 가요',400,548,{align:'center',size:18,fg:'#ffe066',bg:'rgba(10,18,48,.9)'});
+  // 말풍선
+  pill(x,`📅 ${dateLabel(S.day)} 무렵`,12,12);
+  pill(x,`☀ 지구에서 보면 태양은 ${sunC.name} 쪽에 있어요`,788,12,{align:'right',fg:'#ffd27a',size:17});
+  pill(x,`🌙 한밤중 남쪽 하늘에는 ${antiC.name}`,788,46,{align:'right',fg:'#b9d0ff',size:17});
+}
+
 /* ---------- 공전 알아보기 ---------- */
 const YR=365.2422;
 function renderSpace0(x){
@@ -770,9 +853,9 @@ const GUIDE={
  1:`<h2>2. 모형으로 실험하기</h2><p>교과서의 지구 공전 모형이에요. 가운데 탁구공은 태양, 파란 공은 지구, 둘레 벽에는 별자리 그림 12개가 붙어 있어요.</p>
    <ol><li>(가)~(라) 버튼을 누르거나 지구를 끌어서 옮겨요.</li><li>각 위치에서 ‘탁구공 쪽’과 ‘반대쪽’을 촬영해 아래 표에 사진을 모아요.</li>
    <li>사진을 보고 별자리 이름을 골라 표를 완성하고 ‘표 확인하기’를 눌러요.</li><li><b>표를 다 맞혔으면 교과서 252쪽 ‘해보기’의 1~3번 문제를 풀어요.</b></li><li>‘실제 태양처럼 빛내기’를 켜고 탁구공 쪽을 다시 봐요. 무엇이 달라지나요?</li></ol>`,
- 2:`<h2>3. 태양의 연주 운동 관찰하기</h2><p>이제 진짜 우주예요. 지구가 1년 동안 태양 둘레를 돌면, 지구에서 본 태양은 별자리 사이를 조금씩 옮겨 가요.</p>
-   <ol><li>‘▶ 하루씩 재생’을 눌러 지구가 하루에 한 바퀴 자전하는 동안 공전은 얼마나 나아가는지 살펴요.</li><li>‘⏩ 빠르게 1년’을 누르고 아래 ‘황도 12궁’ 띠에서 태양이 움직이는 방향을 살펴요.</li><li>재생을 멈춘 뒤 ‘☀ 낮’과 ‘🌙 밤’을 번갈아 누르며 태양 쪽 하늘과 반대쪽 하늘을 비교해요.</li><li>‘☀ 낮’에서 ‘낮에 별자리 표시하기’를 켜서 태양 뒤에 어떤 별자리가 있는지 확인해요. (실제로는 햇빛 때문에 보이지 않아요!)</li><li>질문에 답해요.</li></ol>`,
- 3:`<h2>4. 우리나라 밤하늘에서 확인하기</h2><p>우리나라(북위 37°)에서 실제로 보이는 하늘이에요. 날짜와 시각을 바꾸며 하늘을 관찰해요.</p>
+ 2:`<h2>3. 1년 동안 태양의 길 따라가기 (연주 운동)</h2><p>이제 진짜 우주예요. 지구가 1년 동안 태양 둘레를 돌면, 지구에서 본 태양은 별자리 사이를 조금씩 옮겨 가요.</p>
+   <ol><li>‘📖 교과서처럼 9월 → 12월 따라가기’를 눌러 교과서 253쪽 그림처럼 지구가 공전할 때 태양이 별자리 사이를 어떻게 옮겨 가는지 봐요.</li><li>‘▶ 1년 재생’을 누르고 아래 ‘황도 12궁’ 띠에서 태양이 움직이는 방향을 살펴요.</li><li>재생을 멈춘 뒤 ‘☀ 낮’과 ‘🌙 밤’을 번갈아 누르며 태양 쪽 하늘과 반대쪽 하늘을 비교해요.</li><li>‘☀ 낮’에서 ‘낮에 별자리 표시하기’를 켜서 태양 뒤에 어떤 별자리가 있는지 확인해요. (실제로는 햇빛 때문에 보이지 않아요!)</li><li>질문에 답해요.</li></ol>`,
+ 3:`<h2>4. 달마다 바뀌는 우리나라 밤하늘</h2><p>우리나라(북위 37°)에서 실제로 보이는 하늘이에요. 날짜와 시각을 바꾸며 하늘을 관찰해요.</p>
    <ol><li>날짜를 8월 15일, 시각을 한밤중 0시로 맞추고 남쪽 하늘을 봐요.</li><li>0시는 그대로 두고 2월, 5월, 11월도 확인해요.</li>
    <li>낮 12시로 바꾸면 별자리는 어떻게 되나요? ‘낮에도 별자리 표시하기’를 켜서 태양 근처에 어떤 별자리가 있는지 확인해요. (실제로는 햇빛 때문에 보이지 않아요!)</li></ol>`
 };
@@ -780,14 +863,14 @@ const CAP={0:['🧭 공전 기록','출발한 뒤 지난 날과 각도'],1:['�
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400)}
 
 function setStage(n){if(n>1&&!S.unlocked[n]){askPassword(n);return}
-  S.stage=n;S.playYear=false;S.playTime=false;S.play0=null;if(S.rotAnim){S.rotAnim=false;S.skyMode=S.pendingSky}S.rotHour=S.skyMode==='day'?12:0;
+  S.stage=n;S.playYear=false;S.playTime=false;S.play0=null;S.followTo=null;if(S.rotAnim){S.rotAnim=false;S.skyMode=S.pendingSky}S.rotHour=S.skyMode==='day'?12:0;
   $$('nav.stages button').forEach(b=>b.classList.toggle('on',+b.dataset.stage===n));
   $('#guide').innerHTML=GUIDE[n];
   $$('[data-for]').forEach(el=>el.classList.toggle('hidden',+el.dataset.for!==n));
   const LEG={0:'<span><b>↺</b> 공전과 자전 모두 시계 반대 방향(서→동)</span><span><b style="color:#ffc24b">━</b> 노란 띠: 출발한 뒤 지구가 지나온 길</span><span><b style="color:#ff6f61">●</b> 출발점</span><span>북극 위에서 내려다본 그림이에요. 지구 가운데 흰 점이 북극이에요.</span>',1:'',
     2:'<span><b style="color:#ff4d4d">●</b> 우리나라(관측자)</span><span><b style="color:#7ee08a">━</b> 지평선 (동·서·남 표시)</span><span><b style="color:#ffc24b">◢</b> 색칠한 부채꼴: 오른쪽 하늘 그림이 보여 주는 범위</span><span><b>↺</b> 자전과 공전 모두 시계 반대 방향(서→동)</span><span>북극 위에서 내려다본 그림이라 북쪽은 화면 앞쪽이에요.</span>',
     3:'<span><b style="color:#ff4d4d">●</b> 우리나라(관측자)</span><span><b style="color:#7ee08a">━</b> 지평선 (동·서·남 표시)</span><span><b style="color:#7ee08a">◢</b> 부채꼴: 지금 하늘 그림에 보이는 범위</span><span><b style="color:#7ee08a">◜</b> 벽의 초록 띠: 지금 지평선 위에 있는 황도</span><span><b>↺</b> 자전과 공전 모두 시계 반대 방향(서→동)</span><span>북극 위에서 내려다본 그림이라 북쪽은 화면 앞쪽이에요.</span>'};
-  $('#spaceLegend').innerHTML=LEG[n];
+  $('#spaceLegend').innerHTML=LEG[n];$('#viewTog').classList.toggle('hidden',n!==2);
   $('#earthCap').textContent=CAP[n][0];$('#earthSub').textContent=CAP[n][1];$('#shootBtn').classList.toggle('hidden',n!==1);
   if(n===0){S.orbStart=S.day;S.el=0}
   if(n===1&&!currentPos())S.day=dayFromSunLon(POS['가']);
@@ -804,21 +887,23 @@ function syncUI(){
   $$('.play0').forEach(b=>{const on=S.play0===b.dataset.mode;b.classList.toggle('on',on);
     b.textContent=on?'⏸ 멈추기':b.dataset.mode==='slow'?'▶ 하루씩 재생 (자전도 함께)':'⏩ 빠르게 재생 (자전 생략)'});
   $$('.playBtn').forEach(b=>{const on=S.playYear&&S.playMode===b.dataset.mode;b.classList.toggle('on',on);
-    b.textContent=on?'⏸ 멈추기':b.dataset.mode==='slow'?'▶ 하루씩 재생 (자전 + 공전)':'⏩ 빠르게 1년 (자전 생략)'});
-  if(S.stage===2){const co=$('#countOut');if(S.playYear&&S.playMode==='slow'){const n=Math.max(0,S.day-S.playStart);
-      co.innerHTML=`🌏 자전 <b>${Math.floor(n)}바퀴</b> (${Math.floor(n)}일) 하는 동안 공전은 약 <b>${(n*360/365.24).toFixed(1)}°</b>만 나아갔어요. 공전 한 바퀴(360°)는 자전 약 365바퀴가 걸려요.`}
-    else if(S.playYear)co.innerHTML='⏩ 빠르게 재생 중: 실제로는 이 동안 지구가 하루에 한 바퀴씩, 1년에 약 365바퀴 자전해요. 너무 빨라 자전은 그림에서 생략했어요.';
-    else co.innerHTML='하루씩 재생: 지구가 하루에 한 바퀴 자전하는 동안 공전 궤도는 약 1°만 나아가요. 공전이 얼마나 느린지 살펴보세요.'}$('#playTime').textContent=S.playTime?'⏸ 멈추기':'▶ 시간 흐르게';
+    b.textContent=on?'⏸ 멈추기':'▶ 1년 재생'});$('#playTime').textContent=S.playTime?'⏸ 멈추기':'▶ 시간 흐르게';
   $$('.hourBtn').forEach(b=>b.classList.toggle('on',Math.abs(+b.dataset.h-S.hour)<.01));
   $$('.face').forEach(b=>b.classList.toggle('on',Math.abs(wrap180(+b.dataset.az-S.az0))<.5));
   const [m]=dateParts(S.day);$$('.mBtn').forEach(b=>b.classList.toggle('on',+b.dataset.m===m));
   $('#shootBtn').disabled=!pos;
+  $$('#viewTog .btn').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view2));
+  if(S.stage===2){$('#spaceSub').textContent=S.view2==='book'?'교과서 그림처럼 비스듬히 봄':'위에서 내려다봄';
+    $('#spaceLegend').innerHTML=S.view2==='book'?'<span><b style="color:#ff8c2a">━▶</b> 지구의 공전 (실제 운동, 서→동)</span><span><b style="color:#ffd27a">┅</b> 지구에서 태양을 바라보는 방향</span><span><b style="color:#ff8c2a">●</b> 지구에서 본 태양의 위치</span><span><b style="color:#78beff">━▶</b> 태양이 별자리 사이를 지나간 길 = 황도 (태양의 연주 운동, 겉보기 운동, 서→동)</span>'
+      :'<span><b style="color:#ff4d4d">●</b> 우리나라(관측자)</span><span><b style="color:#7ee08a">━</b> 지평선 (동·서·남 표시)</span><span><b style="color:#ffc24b">◢</b> 색칠한 부채꼴: 오른쪽 하늘 그림이 보여 주는 범위</span><span><b>↺</b> 자전과 공전 모두 시계 반대 방향(서→동)</span><span>북극 위에서 내려다본 그림이라 북쪽은 화면 앞쪽이에요.</span>'}
+  else $('#spaceSub').textContent=S.stage===0?'위에서 내려다봄':'위에서 내려다봄';
+  $('#followBtn').classList.toggle('on',S.followTo!==null);$('#followBtn').textContent=S.followTo!==null?'⏸ 멈추기':'📖 교과서처럼 9월 → 12월 따라가기';
   $$('.skyMode').forEach(b=>{b.classList.toggle('on',!S.playYear&&b.dataset.sky===(S.rotAnim?S.pendingSky:S.skyMode));b.disabled=S.rotAnim});
   $$('nav.stages button').forEach(b=>{const k=+b.dataset.stage;const lk=b.querySelector('.lk');if(lk){lk.textContent=S.unlocked[k]?'🔓':'🔒';b.classList.toggle('locked',!S.unlocked[k])}});
 }
 /* 모달 (비밀번호, 안내) */
 function closeModal(){$('#modal').classList.remove('show');$('#mbox').classList.remove('wide')}
-function askPassword(n){const names={2:'태양의 연주 운동 관찰하기',3:'우리나라 밤하늘에서 확인하기'};
+function askPassword(n){const names={2:'1년 동안 태양의 길 따라가기',3:'달마다 바뀌는 우리나라 밤하늘'};
   $('#mbox').innerHTML=`<h3>🔒 3·4단계 잠금</h3><p>‘${names[n]}’는 선생님 안내 뒤에 열 수 있어요.<br>선생님이 알려 준 비밀번호를 입력하세요.</p>
     <input id="pwIn" type="password" inputmode="numeric" autocomplete="off" aria-label="비밀번호"><p class="fb no" id="pwFb"></p>
     <div class="row"><button class="btn" id="pwCancel">닫기</button><button class="btn big on" id="pwOk">열기</button></div>`;
@@ -841,7 +926,10 @@ $$('[data-cam]').forEach(b=>b.onclick=()=>{S.camDir=b.dataset.cam;syncUI()});
 $('#sunRealBtn').onclick=()=>{S.sunReal=!S.sunReal;syncUI()};
 $('#eclipseBtn').onclick=()=>{S.eclipse=!S.eclipse;syncUI()};
 $('#trailClear').onclick=()=>{S.trail=[sunLon(S.day)]};
-$$('.playBtn').forEach(b=>b.onclick=()=>{const m=b.dataset.mode;if(S.rotAnim)return;
+$$('#viewTog .btn').forEach(b=>b.onclick=()=>{S.view2=b.dataset.v;syncUI()});
+$('#followBtn').onclick=()=>{if(S.followTo!==null){S.followTo=null;syncUI();return}
+  S.playYear=false;S.rotAnim=false;S.day=day15(9);S.trail=[sunLon(S.day)];S.followTo=day15(12);syncUI()};
+$$('.playBtn').forEach(b=>b.onclick=()=>{const m=b.dataset.mode;if(S.rotAnim)return;S.followTo=null;
   if(S.playYear&&S.playMode===m){S.playYear=false;if(m==='slow')S.skyMode=s2view().day?'day':'night';syncUI();return}
   S.playMode=m;S.playYear=true;S.playStart=S.day;
   if(m==='fast')S.rotHour=S.skyMode==='day'?12:0;syncUI()});
@@ -863,6 +951,7 @@ cs.addEventListener('pointerdown',e=>{const[mx,my]=logical(cs,e),[ex,ey]=earthXY
   if(Math.hypot(mx-ex,my-ey)<36){drag=true;cs.setPointerCapture(e.pointerId);S.playYear=false;syncUI()}});
 cs.addEventListener('pointermove',e=>{const[mx,my]=logical(cs,e);
   if(!drag){const[ex,ey]=earthXY();cs.style.cursor=Math.hypot(mx-ex,my-ey)<36?'grab':'default';return}
+  if(bookView()){const a=Math.atan2(-(my-BK.CY)/BK.K,mx-BK.CX)*R2D;S.day=dayFromSunLon(a+BK.OFF-180);S.followTo=null;addTrail();syncUI();return}
   const phi=Math.atan2(-(my-CY),mx-CX)*R2D;S.day=dayFromSunLon(phi-5);S.play0=null;if(S.stage===0)S.el=wrapDay(S.day-S.orbStart);addTrail();syncUI()});
 const endDrag=()=>{if(!drag)return;drag=false;
   if(S.stage===1){const l=sunLon(S.day);for(const k in POS)if(Math.abs(wrap180(l-POS[k]))<14){S.day=dayFromSunLon(POS[k]);break}}syncUI()};
@@ -910,6 +999,7 @@ function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;
     else S.day=wrapDay(S.day+dt*15.2);addTrail();if(++tick%6===0)syncUI()}
   if(S.play0&&S.stage===0){const dd=S.play0==='slow'?dt/2.4:dt*15.2;const left=YR-S.el;const step=Math.min(dd,left);
     S.day=wrapDay(S.day+step);S.el+=step;if(S.el>=YR-1e-6){S.el=YR;S.play0=null;syncUI()}else if(++tick%6===0)syncUI()}
+  if(S.followTo!==null&&S.stage===2){S.day=Math.min(S.followTo,S.day+dt*12);addTrail();if(S.day>=S.followTo-1e-6){S.followTo=null;syncUI();toast('9월 사자자리 → 12월 전갈자리: 태양이 별자리 사이를 서쪽에서 동쪽으로 옮겨 갔어요!')}else if(++tick%6===0)syncUI()}
   if(S.playTime){S.hour=(S.hour+dt*1.6)%24;if(++tick%6===0)syncUI()}
   if(S.rotAnim){const dh=Math.min(dt*7,S.rotTarget-S.rotHour);S.rotHour+=dh;S.day=wrapDay(S.day+dh/24);if(S.rotHour>=S.rotTarget-1e-6){S.rotHour=S.rotTarget%24;S.skyMode=S.pendingSky;S.rotAnim=false;syncUI()}}
   renderSpace();renderEarth();
