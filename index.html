@@ -852,7 +852,7 @@ const GUIDE={
    <ol><li>‘▶ 하루씩 재생’을 눌러요. 지구가 한 바퀴 자전하는 동안 공전은 얼마나 나아가나요?</li><li>‘⏩ 빠르게 재생’을 눌러 지구가 어느 방향으로 공전하는지, 출발점으로 돌아오는 데 며칠 걸리는지 확인해요.</li><li>아래 설명과 표를 읽고 질문에 답해요.</li></ol>`,
  1:`<h2>2. 모형으로 실험하기</h2><p>교과서의 지구 공전 모형이에요. 가운데 탁구공은 태양, 파란 공은 지구, 둘레 벽에는 별자리 그림 12개가 붙어 있어요.</p>
    <ol><li>(가)~(라) 버튼을 누르거나 지구를 끌어서 옮겨요.</li><li>각 위치에서 ‘탁구공 쪽’과 ‘반대쪽’을 촬영해 아래 표에 사진을 모아요.</li>
-   <li>사진을 보고 별자리 이름을 골라 표를 완성하고 ‘표 확인하기’를 눌러요.</li><li><b>표를 다 맞혔으면 교과서 252쪽 ‘해보기’의 1~3번 문제를 풀어요.</b></li><li>‘실제 태양처럼 빛내기’를 켜고 탁구공 쪽을 다시 봐요. 무엇이 달라지나요?</li></ol>`,
+   <li>사진을 보고 별자리 이름을 골라 표를 완성하고 ‘표 확인하기’를 눌러요.</li><li><b>표를 다 맞혔으면 교과서 252쪽 ‘정리하기’에 지금 완성한 관찰 결과표를 똑같이 그리고 정리해서 적어요.</b></li><li>‘실제 태양처럼 빛내기’를 켜고 탁구공 쪽을 다시 봐요. 무엇이 달라지나요?</li></ol>`,
  2:`<h2>3. 1년 동안 태양의 길 따라가기 (연주 운동)</h2><p>이제 진짜 우주예요. 지구가 1년 동안 태양 둘레를 돌면, 지구에서 본 태양은 별자리 사이를 조금씩 옮겨 가요.</p>
    <ol><li>‘📖 교과서처럼 9월 → 12월 따라가기’를 눌러 교과서 253쪽 그림처럼 지구가 공전할 때 태양이 별자리 사이를 어떻게 옮겨 가는지 봐요.</li><li>‘▶ 1년 재생’을 누르고 아래 ‘황도 12궁’ 띠에서 태양이 움직이는 방향을 살펴요.</li><li>재생을 멈춘 뒤 ‘☀ 낮’과 ‘🌙 밤’을 번갈아 누르며 태양 쪽 하늘과 반대쪽 하늘을 비교해요.</li><li>‘☀ 낮’에서 ‘낮에 별자리 표시하기’를 켜서 태양 뒤에 어떤 별자리가 있는지 확인해요. (실제로는 햇빛 때문에 보이지 않아요!)</li><li>질문에 답해요.</li></ol>`,
  3:`<h2>4. 달마다 바뀌는 우리나라 밤하늘</h2><p>우리나라(북위 37°)에서 실제로 보이는 하늘이에요. 날짜와 시각을 바꾸며 하늘을 관찰해요.</p>
@@ -911,7 +911,7 @@ function askPassword(n){const names={2:'1년 동안 태양의 길 따라가기',
   const tryIt=()=>{if(inp.value.trim()===String(TEACHER_PASSWORD)){S.unlocked[2]=true;S.unlocked[3]=true;try{sessionStorage.setItem('revUnlock',JSON.stringify(S.unlocked))}catch(e){}
       closeModal();toast('3단계와 4단계가 열렸어요!');setStage(n)}else{$('#pwFb').textContent='비밀번호가 맞지 않아요. 선생님 안내를 기다려 주세요.';inp.select()}};
   $('#pwOk').onclick=tryIt;$('#pwCancel').onclick=closeModal;inp.onkeydown=e=>{if(e.key==='Enter')tryIt();if(e.key==='Escape')closeModal()}}
-function showNotice(){$('#mbox').innerHTML=`<h3>📖 표 완성!</h3><p>8칸을 모두 맞혔어요.<br>이제 <b style="color:#ffc24b">교과서 252쪽 ‘해보기’의 1~3번 문제</b>를 풀어 보세요.</p>
+function showNotice(){$('#mbox').innerHTML=`<h3>📖 표 완성!</h3><p>8칸을 모두 맞혔어요.<br>이제 <b style="color:#ffc24b">교과서 252쪽 ‘정리하기’</b>에<br>지금 완성한 관찰 결과표를 똑같이 그리고 정리해서 적어 보세요.</p>
     <div class="row"><button class="btn big on" id="nOk">확인</button></div>`;$('#modal').classList.add('show');$('#nOk').onclick=closeModal;$('#nOk').focus()}
 function addTrail(){const l=sunLon(S.day);const last=S.trail[S.trail.length-1];if(last===undefined||Math.abs(wrap180(l-last))>=3){S.trail.push(l);if(S.trail.length>130)S.trail.shift()}}
 
@@ -982,8 +982,8 @@ $('#checkRec').onclick=()=>{let ok=0,filled=0;
     td.classList.remove('right','wrong');if(v){filled++;td.classList.add(v===ans?'right':'wrong');if(v===ans)ok++}});
   const fb=$('#recFb');
   const nx=$('#next1');nx.classList.add('show');
-  nx.innerHTML=ok===8?'📖 표를 모두 완성했어요! 이제 <b>교과서 252쪽 ‘해보기’의 1~3번 문제</b>를 풀어 보세요. 다 풀면 선생님의 안내를 기다려요.'
-    :'📖 빨간 칸을 고쳐 표를 모두 맞힌 뒤, <b>교과서 252쪽 ‘해보기’의 1~3번 문제</b>를 풀어 보세요.';
+  nx.innerHTML=ok===8?'📖 표를 모두 완성했어요! 이제 <b>교과서 252쪽 ‘정리하기’</b>에 이 관찰 결과표를 똑같이 그리고 정리해서 적어 보세요. 다 적으면 선생님의 안내를 기다려요.'
+    :'📖 빨간 칸을 고쳐 표를 모두 맞힌 뒤, <b>교과서 252쪽 ‘정리하기’</b>에 관찰 결과표를 똑같이 그리고 정리해서 적어 보세요.';
   if(ok===8){fb.className='fb ok';fb.textContent='8칸 모두 맞았어요!';$('#found1').classList.add('show');showNotice()}
   else{fb.className='fb no';fb.textContent=filled<8?`${8-filled}칸이 비어 있어요. (맞은 칸 ${ok}개)`:`8칸 중 ${ok}칸 맞았어요. 빨간 칸의 사진을 다시 확인해 보세요.`}};
 
